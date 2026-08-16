@@ -1,0 +1,931 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>110 → 90</title>
+<meta name="theme-color" content="#0F2438">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@100..125,400..900&family=IBM+Plex+Mono:wght@400;600&family=IBM+Plex+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+/* ---------- tokens ---------- */
+:root{
+  --mat:#0F2438;        /* tatami deep blue  */
+  --mat-2:#16324B;      /* raised panel      */
+  --mat-3:#1E4265;      /* hairline / edge   */
+  --ink:#E9F0F7;
+  --ink-dim:#8AA4BE;
+  --gold:#E0B93A;       /* belt degree       */
+  --red:#C0392B;        /* belt bar / missed */
+  --green:#4E9E6A;
+  --belt:#0A121C;
+  --r:10px;
+  --gutter:16px;
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--mat);color:var(--ink)}
+body{
+  font-family:"IBM Plex Sans",system-ui,sans-serif;
+  font-size:15px;line-height:1.5;
+  padding:0 var(--gutter) 64px;
+  max-width:760px;margin:0 auto;
+  padding-top:env(safe-area-inset-top);
+}
+h1,h2,h3{font-family:"Archivo",system-ui,sans-serif;font-variation-settings:"wdth" 118,"wght" 800;margin:0;letter-spacing:-.01em}
+.num{font-family:"IBM Plex Mono",monospace;font-variant-numeric:tabular-nums}
+button{font:inherit;color:inherit;background:none;border:0;cursor:pointer}
+:focus-visible{outline:2px solid var(--gold);outline-offset:2px;border-radius:4px}
+
+/* ---------- header ---------- */
+header{padding:22px 0 14px}
+.eyebrow{font-family:"IBM Plex Mono",monospace;font-size:11px;letter-spacing:.16em;text-transform:uppercase;color:var(--gold)}
+header h1{font-size:clamp(34px,11vw,52px);line-height:.92;margin:6px 0 8px;font-variation-settings:"wdth" 122,"wght" 900}
+header h1 em{font-style:normal;color:var(--ink-dim)}
+.phase{font-size:13px;color:var(--ink-dim)}
+.phase b{color:var(--ink);font-weight:600}
+
+/* ---------- signature: the belt ---------- */
+.belt-wrap{margin:20px 0 8px}
+.belt{
+  position:relative;height:46px;border-radius:4px;overflow:hidden;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.035) 0 2px,transparent 2px 5px),
+    linear-gradient(180deg,#F0EDE4,#D8D3C6);
+  box-shadow:inset 0 -6px 12px rgba(0,0,0,.22), inset 0 2px 0 rgba(255,255,255,.5);
+}
+.belt-fill{
+  position:absolute;inset:0 auto 0 0;width:0;
+  background:
+    repeating-linear-gradient(90deg,rgba(255,255,255,.05) 0 2px,transparent 2px 5px),
+    linear-gradient(180deg,#1C4064,#0E2137);
+  transition:width .6s cubic-bezier(.4,0,.2,1);
+}
+.ponteira{
+  position:absolute;top:0;bottom:0;width:58px;margin-left:-29px;
+  background:linear-gradient(180deg,#151F2B,var(--belt));
+  border-left:2px solid rgba(0,0,0,.5);border-right:2px solid rgba(0,0,0,.5);
+  display:flex;align-items:center;justify-content:center;gap:4px;
+  transition:left .6s cubic-bezier(.4,0,.2,1);
+}
+.stripe{width:5px;height:22px;border-radius:1px;background:rgba(255,255,255,.13)}
+.stripe.on{background:var(--gold);box-shadow:0 0 6px rgba(224,185,58,.55)}
+.belt-scale{display:flex;justify-content:space-between;margin-top:7px;font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-dim)}
+
+/* ---------- stat row ---------- */
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin:16px 0 4px}
+.stat{background:var(--mat-2);border:1px solid var(--mat-3);border-radius:var(--r);padding:12px 10px}
+.stat .k{font-size:10px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim)}
+.stat .v{font-family:"IBM Plex Mono",monospace;font-size:22px;font-weight:600;margin-top:3px}
+.stat .v small{font-size:12px;color:var(--ink-dim);font-weight:400}
+.ahead{color:var(--green)} .behind{color:var(--red)}
+
+/* ---------- cards ---------- */
+section{margin-top:26px}
+.label{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:10px}
+.label h2{font-size:15px;font-variation-settings:"wdth" 112,"wght" 700;text-transform:uppercase;letter-spacing:.06em}
+.label span{font-size:12px;color:var(--ink-dim);font-family:"IBM Plex Mono",monospace}
+.card{background:var(--mat-2);border:1px solid var(--mat-3);border-radius:var(--r);padding:14px}
+
+/* today */
+.datebar{display:flex;gap:8px;align-items:center;margin-bottom:12px}
+.datebar input{
+  flex:1;background:var(--mat);border:1px solid var(--mat-3);color:var(--ink);
+  border-radius:8px;padding:9px 10px;font-family:"IBM Plex Mono",monospace;font-size:14px
+}
+.datebar button{background:var(--mat-3);border-radius:8px;padding:9px 12px;font-size:13px}
+.weight-in{display:flex;gap:8px;align-items:center;margin-bottom:14px}
+.weight-in input{
+  width:120px;background:var(--mat);border:1px solid var(--mat-3);color:var(--ink);
+  border-radius:8px;padding:11px 12px;font-family:"IBM Plex Mono",monospace;font-size:19px;font-weight:600
+}
+.weight-in label{font-size:12px;color:var(--ink-dim);line-height:1.3}
+
+.checks{display:grid;gap:7px}
+.check{
+  display:flex;align-items:center;gap:11px;width:100%;text-align:left;
+  padding:11px 12px;border-radius:8px;background:var(--mat);
+  border:1px solid var(--mat-3);transition:background .15s,border-color .15s
+}
+.check .box{
+  width:20px;height:20px;flex:0 0 20px;border-radius:5px;border:2px solid var(--mat-3);
+  display:grid;place-items:center;font-size:12px;color:var(--mat)
+}
+.check.done{border-color:rgba(78,158,106,.55);background:rgba(78,158,106,.09)}
+.check.done .box{background:var(--green);border-color:var(--green)}
+.check .t{font-size:14px}
+.check .t i{display:block;font-style:normal;font-size:11px;color:var(--ink-dim);font-family:"IBM Plex Mono",monospace}
+
+/* dot grid */
+.dots{display:grid;grid-template-columns:repeat(14,1fr);gap:5px}
+.dot{aspect-ratio:1;border-radius:3px;background:var(--mat-3);opacity:.45}
+.dot.p0{opacity:.45} .dot.p1{background:#7A5F18;opacity:1}
+.dot.p2{background:#B08D24;opacity:1} .dot.p3{background:var(--gold);opacity:1}
+.dot.today{outline:2px solid var(--ink);outline-offset:1px}
+.legend{display:flex;gap:14px;margin-top:10px;font-size:11px;color:var(--ink-dim)}
+.legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:5px;vertical-align:-1px}
+
+/* charts */
+svg{display:block;width:100%;height:auto;overflow:visible}
+.gridline{stroke:var(--mat-3);stroke-width:1}
+.axis{fill:var(--ink-dim);font-family:"IBM Plex Mono",monospace;font-size:9px}
+.plan{stroke:var(--gold);stroke-width:1.5;stroke-dasharray:4 4;fill:none;opacity:.75}
+.real{stroke:var(--ink);stroke-width:1.2;fill:none;opacity:.4}
+.trend{stroke:#5FB8E8;stroke-width:2.5;fill:none;stroke-linejoin:round;stroke-linecap:round}
+
+/* lifts */
+.lift{display:flex;align-items:center;gap:8px;padding:9px 0;border-bottom:1px solid var(--mat-3)}
+.lift:last-child{border-bottom:0}
+.lift .n{flex:1;min-width:0}
+.lift .n b{display:block;font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.lift .n i{font-style:normal;font-size:10px;color:var(--gold);font-family:"IBM Plex Mono",monospace;letter-spacing:.06em;text-transform:uppercase}
+.lift .sets{display:flex;gap:5px}
+.lift input{
+  width:44px;background:var(--mat);border:1px solid var(--mat-3);color:var(--ink);
+  border-radius:6px;padding:8px 0;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600
+}
+.lift input::placeholder{color:#4A6A88;font-weight:400}
+.hint{font-size:11px;color:var(--ink-dim);margin-top:10px;line-height:1.45}
+
+/* footer actions */
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}
+.btn{background:var(--mat-2);border:1px solid var(--mat-3);border-radius:8px;padding:11px 14px;font-size:13px}
+.btn.warn{border-color:rgba(192,57,43,.5);color:#E8897E}
+.mrow{display:flex;align-items:center;gap:10px;padding:9px 0;border-bottom:1px solid var(--mat-3)}
+.mrow:last-child{border-bottom:0}
+.mlab{flex:1;min-width:0}
+.mlab b{display:block;font-size:13.5px;font-weight:600}
+.mlab b s{text-decoration:none;font-weight:400;font-size:10px;color:var(--ink-dim);font-family:"IBM Plex Mono",monospace}
+.mlab i{font-style:normal;font-size:11px;color:var(--ink-dim)}
+.mrow input{
+  width:76px;flex:0 0 76px;background:var(--mat);border:1px solid var(--mat-3);color:var(--ink);
+  border-radius:6px;padding:9px 0;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600
+}
+.mrow input::placeholder{color:#43617D;font-weight:400;font-size:12px}
+.pick{
+  width:30px;height:26px;margin-left:5px;border-radius:6px;
+  border:1px solid var(--mat-3);background:var(--mat);
+  font-family:"IBM Plex Mono",monospace;font-size:12px;color:var(--ink-dim)
+}
+.pick.on{background:var(--gold);border-color:var(--gold);color:#1A1305;font-weight:600}
+.rname{
+  font-family:"Archivo",sans-serif;font-variation-settings:"wdth" 112,"wght" 700;
+  font-size:13px;text-transform:uppercase;letter-spacing:.06em;color:var(--gold);
+  padding-bottom:9px;margin-bottom:4px;border-bottom:1px solid var(--mat-3)
+}
+.exblock{padding:11px 0;border-bottom:1px solid var(--mat-3)}
+.exblock:last-child{border-bottom:0}
+.exhead{display:flex;justify-content:space-between;align-items:baseline;gap:10px;margin-bottom:8px}
+.exhead b{font-size:13.5px;font-weight:600}
+.exhead i{font-style:normal;font-size:11px;color:var(--ink-dim);font-family:"IBM Plex Mono",monospace;white-space:nowrap}
+.setgrid{display:grid;grid-template-columns:20px 1fr 1fr;gap:5px;align-items:center}
+.setgrid.bw{grid-template-columns:20px 1fr}
+.setgrid .colh{font-family:"IBM Plex Mono",monospace;font-size:9px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-dim);text-align:center}
+.setn{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--ink-dim);text-align:center}
+.setgrid input{
+  width:100%;background:var(--mat);border:1px solid var(--mat-3);color:var(--ink);
+  border-radius:6px;padding:9px 0;text-align:center;
+  font-family:"IBM Plex Mono",monospace;font-size:15px;font-weight:600
+}
+.setgrid input::placeholder{color:#43617D;font-weight:400}
+.sync{font-family:"IBM Plex Mono",monospace;font-size:11px;color:var(--green)}
+.sync.off{color:#E0B93A}
+.toast{
+  position:fixed;left:50%;bottom:22px;transform:translate(-50%,12px);
+  background:var(--gold);color:#1A1305;padding:10px 18px;border-radius:99px;
+  font-size:13px;font-weight:600;opacity:0;pointer-events:none;transition:.25s
+}
+.toast.show{opacity:1;transform:translate(-50%,0)}
+@media (prefers-reduced-motion:reduce){*{transition:none!important;animation:none!important}}
+</style>
+</head>
+<body>
+
+<header>
+  <div class="eyebrow" id="eyebrow">—</div>
+  <h1>110 <em>→</em> 90</h1>
+  <div class="phase" id="phaseLine">—</div>
+</header>
+
+<div class="belt-wrap">
+  <div class="belt">
+    <div class="belt-fill" id="beltFill"></div>
+    <div class="ponteira" id="ponteira">
+      <span class="stripe" data-i="0"></span><span class="stripe" data-i="1"></span>
+      <span class="stripe" data-i="2"></span><span class="stripe" data-i="3"></span>
+    </div>
+  </div>
+  <div class="belt-scale"><span>110 kg</span><span id="beltNow">—</span><span>90 kg</span></div>
+</div>
+
+<div class="stats">
+  <div class="stat"><div class="k">Peso</div><div class="v" id="sWeight">—</div></div>
+  <div class="stat"><div class="k">vs. plano</div><div class="v" id="sDelta">—</div></div>
+  <div class="stat"><div class="k">Gordura est.</div><div class="v" id="sBf">—</div></div>
+</div>
+
+<section>
+  <div class="label"><h2>Hoje</h2><span id="todayAdh">—</span></div>
+  <div class="card">
+    <div class="datebar">
+      <input type="date" id="dateSel">
+      <button class="btn" id="btnToday" style="padding:9px 12px">Hoje</button>
+    </div>
+    <div class="weight-in">
+      <input type="number" step="0.1" inputmode="decimal" id="wIn" placeholder="—">
+      <label>Peso da manhã, em jejum,<br>antes de beber água</label>
+    </div>
+    <div class="checks" id="checks"></div>
+  </div>
+</section>
+
+<section>
+  <div class="label"><h2>Medidas</h2><span id="measWhen">—</span></div>
+  <div class="card">
+    <div class="stats" style="margin:0 0 14px">
+      <div class="stat"><div class="k">Cintura</div><div class="v" id="mWaist">—</div></div>
+      <div class="stat"><div class="k">Ombro ÷ cintura</div><div class="v" id="mRatio">—</div></div>
+      <div class="stat"><div class="k">Desde a 1ª</div><div class="v" id="mDelta">—</div></div>
+    </div>
+    <div id="measures"></div>
+    <svg id="chartM" viewBox="0 0 320 150" preserveAspectRatio="none" aria-label="Cintura e razão ombro sobre cintura" style="margin-top:14px"></svg>
+    <p class="hint"><b style="color:#5FB8E8">Azul</b> é a cintura em cm, escala à esquerda. <b style="color:var(--gold)">Dourado</b> é ombro ÷ cintura, escala à direita — hoje perto de 1,25, o alvo é 1,45–1,50.<br>
+    Sempre de manhã, em jejum, depois do banheiro. Expire normal, não sugue a barriga. Meça três vezes e anote a do meio.</p>
+  </div>
+</section>
+
+<section>
+  <div class="label"><h2>Últimos 28 dias</h2><span id="streak">—</span></div>
+  <div class="card">
+    <div class="dots" id="dots"></div>
+    <div class="legend">
+      <span><i style="background:var(--gold)"></i>tudo</span>
+      <span><i style="background:#B08D24"></i>quase</span>
+      <span><i style="background:#7A5F18"></i>parcial</span>
+      <span><i style="background:var(--mat-3);opacity:.5"></i>vazio</span>
+    </div>
+  </div>
+</section>
+
+<section>
+  <div class="label"><h2>Peso</h2><span>média 7d · plano</span></div>
+  <div class="card"><svg id="chartW" viewBox="0 0 320 170" preserveAspectRatio="none" aria-label="Gráfico de peso"></svg></div>
+</section>
+
+<section>
+  <div class="label"><h2>Aderência semanal</h2><span>% do checklist</span></div>
+  <div class="card"><svg id="chartA" viewBox="0 0 320 120" preserveAspectRatio="none" aria-label="Gráfico de aderência"></svg></div>
+</section>
+
+<section>
+  <div class="label"><h2>Treino</h2><span id="liftDay">—</span></div>
+  <div class="card">
+    <div id="lifts"></div>
+    <p class="hint"><b>Até 13/09 · calistenia:</b> meta da próxima sessão = reps de hoje + 2. Passou de 20 na 1ª série, sobe a variação.<br>
+    <b>A partir de 14/09 · academia:</b> A, B e C se alternam sozinhos — dá para trocar no botão. Bateu o topo da faixa em todas as séries? Sobe a carga na próxima.<br>
+    Compostos param com 1–2 reps na reserva, só a última série vai à falha. Isolados vão à falha sempre. Os campos em cinza mostram a última sessão igual.</p>
+  </div>
+</section>
+
+<section>
+  <div class="label"><h2>Dados</h2><span class="sync" id="syncState">—</span></div>
+  <div class="actions">
+    <button class="btn" id="btnExport">Exportar JSON</button>
+    <button class="btn" id="btnImport">Importar JSON</button>
+    <button class="btn warn" id="btnReset">Apagar tudo</button>
+  </div>
+  <p class="hint">Os dados ficam no banco do servidor. O aparelho guarda uma cópia local para abrir rápido e funcionar sem sinal — quando a conexão volta, ele sincroniza sozinho.</p>
+  <input type="file" id="fileIn" accept="application/json" hidden>
+</section>
+
+<div class="toast" id="toast"></div>
+
+<script>
+"use strict";
+
+/* ============================================================
+   plan.js — the plan is data, the UI just renders it
+   ============================================================ */
+
+const PLAN = {
+  startWeight: 110,
+  goalWeight: 90,
+  startBf: 0.30,
+  fatShare: 0.95,           // assumed share of loss coming from fat
+  // piecewise weight targets — matches the phased milestones
+  curve: [
+    ["2026-08-17", 110],
+    ["2026-10-31", 103],
+    ["2026-12-31",  97],
+    ["2027-02-28",  93],
+    ["2027-04-30",  90]
+  ],
+  phases: [
+    { id:"p0",  from:"2026-08-17", to:"2026-09-07", routine:"fixed",
+      name:"Fase 0 · Calistenia", note:"3x/semana · dieta 2.250 kcal",
+      tasks:[
+        ["train","Calistenia (full body)","seg · qua · sex"],
+        ["kcal", "Calorias até 2.250",""],
+        ["prot", "Proteína ≥ 180 g",""],
+        ["steps","8.000 passos",""]
+      ]},
+    { id:"trip", from:"2026-09-08", to:"2026-09-13",
+      name:"Viagem", note:"meta: não perder terreno",
+      tasks:[
+        ["kcal", "Calorias até 2.250",""],
+        ["prot", "Proteína ≥ 180 g",""],
+        ["steps","Caminhar o que der",""]
+      ]},
+    { id:"p1", from:"2026-09-14", to:"2027-12-31", routine:"abc",
+      name:"Fase 1 · Academia + jiu-jitsu", note:"rampa de volume",
+      tasks:[
+        ["train","Musculação (full body)","2x/sem → 3x na 3ª semana"],
+        ["bjj",  "Jiu-jitsu","2x → 3x → 4x"],
+        ["kcal", "Calorias até 2.250",""],
+        ["prot", "Proteína ≥ 180 g",""],
+        ["steps","8.000 passos",""]
+      ]}
+  ],
+  // Tape measure, every 14 days from day one. Order matters — it is the order taken.
+  measureStart: "2026-08-17",
+  measureEvery: 14,
+  measures: [
+    ["waist",    "Cintura no umbigo",     "na linha do umbigo, expirando normal"],
+    ["waistMin", "Cintura mais estreita", "3–5 cm acima do umbigo"],
+    ["shoulder", "Ombro",                 "maior circunferência, braços relaxados"],
+    ["neck",     "Pescoço",               "logo abaixo do pomo de adão"],
+    ["hip",      "Quadril",               "opcional", true],
+    ["arm",      "Braço contraído",       "opcional", true]
+  ],
+
+  /* Routine library.
+     Exercise: [id, name, sets, repRange, bodyweight?]
+     "fixed"  -> the calisthenics block, same session every time (until 13/09)
+     "abc"    -> gym rotation from 14/09, weight is logged alongside reps  */
+  routines: {
+    CAL: { label:"Calistenia", ex:[
+      ["hpush","Flexão inclinada",            3,"8-20",true],
+      ["vpull","Barra com elástico",          3,"8-20",true],
+      ["lpull","Elevação de quadril",         3,"8-20",true],
+      ["abs",  "Elevação de pernas",          3,"8-20",true],
+      ["vpush","Pike pushup elevado",         3,"8-20",true],
+      ["hpull","Remada invertida",            3,"8-20",true],
+      ["lpush","Agachamento livre",           3,"8-20",true],
+      ["core", "Bird dog",                    3,"8-20",true]
+    ]},
+    A: { label:"A · Peito e ombro", ex:[
+      ["a1","Supino inclinado halteres",      4,"6-10"],
+      ["a2","Supino máquina",                 3,"8-12"],
+      ["a3","Desenvolvimento halteres",       3,"8-12"],
+      ["a4","Elevação lateral",               4,"12-20"],
+      ["a5","Leg press",                      3,"10-15"],
+      ["a6","Tríceps francês halter",         3,"10-15"]
+    ]},
+    B: { label:"B · Costas e ombro", ex:[
+      ["b1","Puxada frontal pegada aberta",   4,"8-12"],
+      ["b2","Remada máquina apoio no peito",  4,"8-12"],
+      ["b3","Elevação lateral",               4,"12-20"],
+      ["b4","Crucifixo invertido máquina",    3,"15-20"],
+      ["b5","Mesa flexora",                   3,"10-15"],
+      ["b6","Rosca inclinada halteres",       3,"8-12"]
+    ]},
+    C: { label:"C · Ombro e misto", ex:[
+      ["c1","Desenvolvimento máquina",        4,"8-12"],
+      ["c2","Elevação lateral",               4,"12-20"],
+      ["c3","Remada serrote halter",          4,"8-12"],
+      ["c4","Supino reto halteres",           3,"8-12"],
+      ["c5","Afundo búlgaro halteres",        3,"8-12"],
+      ["c6","Elevação de pernas suspensa",    3,"falha",true]
+    ]}
+  }
+};
+
+/* ============================================================
+   store.js
+   ============================================================ */
+
+const API   = "/api/state";
+const CACHE = "cut110-90.cache";   // local mirror, so the app opens instantly and survives a dead connection
+let db = blank();
+let saveTimer = null;
+
+function blank(){ return { version:1, days:{}, lifts:{}, meas:{} }; }
+function day(k){ return db.days[k] || (db.days[k] = {}); }
+
+function cacheRead(){
+  try{ const raw = localStorage.getItem(CACHE); return raw ? JSON.parse(raw) : null; }catch(e){ return null; }
+}
+function cacheWrite(){
+  try{ localStorage.setItem(CACHE, JSON.stringify(db)); }catch(e){}
+}
+
+function setSync(state){
+  const el = document.getElementById("syncState");
+  if(!el) return;
+  el.textContent = { saving:"salvando…", ok:"salvo no servidor", offline:"offline — só neste aparelho" }[state];
+  el.className = state === "offline" ? "sync off" : "sync";
+}
+
+/** Load from the server, falling back to the local mirror. */
+async function boot(){
+  const cached = cacheRead();
+  if(cached) db = Object.assign(blank(), cached);
+  render();
+  try{
+    const r = await fetch(API, { cache:"no-store" });
+    if(!r.ok) throw new Error(r.status);
+    db = Object.assign(blank(), await r.json());
+    cacheWrite(); render(); setSync("ok");
+  }catch(e){
+    setSync("offline");
+  }
+}
+
+/** Write locally now, push to the server debounced. */
+function save(){
+  cacheWrite();
+  setSync("saving");
+  clearTimeout(saveTimer);
+  saveTimer = setTimeout(async () => {
+    try{
+      const r = await fetch(API, {
+        method:"PUT",
+        headers:{ "Content-Type":"application/json" },
+        body:JSON.stringify(db)
+      });
+      if(!r.ok) throw new Error(r.status);
+      setSync("ok");
+    }catch(e){
+      setSync("offline");
+    }
+  }, 500);
+}
+
+/* ============================================================
+   date helpers — everything keyed by YYYY-MM-DD, local time
+   ============================================================ */
+
+const iso  = d => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,"0")}-${String(d.getDate()).padStart(2,"0")}`;
+const fromIso = s => { const [y,m,dd]=s.split("-").map(Number); return new Date(y,m-1,dd); };
+const addDays = (s,n) => { const d=fromIso(s); d.setDate(d.getDate()+n); return iso(d); };
+const daysBetween = (a,b) => Math.round((fromIso(b)-fromIso(a))/86400000);
+const prettyDate = s => fromIso(s).toLocaleDateString("pt-BR",{day:"2-digit",month:"short"});
+
+let selected = iso(new Date());
+
+/* ============================================================
+   plan math
+   ============================================================ */
+
+function plannedWeight(dateKey){
+  const c = PLAN.curve;
+  if(dateKey <= c[0][0]) return c[0][1];
+  if(dateKey >= c[c.length-1][0]) return c[c.length-1][1];
+  for(let i=0;i<c.length-1;i++){
+    if(dateKey >= c[i][0] && dateKey <= c[i+1][0]){
+      const span = daysBetween(c[i][0], c[i+1][0]);
+      const gone = daysBetween(c[i][0], dateKey);
+      return c[i][1] + (c[i+1][1]-c[i][1]) * (gone/span);
+    }
+  }
+  return c[0][1];
+}
+
+function estimatedBf(w){
+  const startFat = PLAN.startWeight * PLAN.startBf;
+  const fat = Math.max(0, startFat - (PLAN.startWeight - w) * PLAN.fatShare);
+  return w > 0 ? (fat / w) * 100 : 0;
+}
+
+function phaseFor(dateKey){
+  return PLAN.phases.find(p => dateKey >= p.from && dateKey <= p.to) || PLAN.phases[PLAN.phases.length-1];
+}
+
+/** last logged weight on or before dateKey */
+function weightAt(dateKey){
+  const keys = Object.keys(db.days).filter(k => k <= dateKey && typeof db.days[k].w === "number").sort();
+  return keys.length ? db.days[keys[keys.length-1]].w : null;
+}
+
+/** 7-day trailing average of logged weights */
+function trend(dateKey){
+  const vals = [];
+  for(let i=0;i<7;i++){
+    const d = db.days[addDays(dateKey,-i)];
+    if(d && typeof d.w === "number") vals.push(d.w);
+  }
+  return vals.length ? vals.reduce((a,b)=>a+b,0)/vals.length : null;
+}
+
+/** share of the day's tasks that are checked, 0..1, or null if nothing logged */
+function adherence(dateKey){
+  const d = db.days[dateKey]; if(!d) return null;
+  const tasks = phaseFor(dateKey).tasks;
+  const hit = tasks.filter(t => d[t[0]]).length;
+  if(hit === 0 && typeof d.w !== "number") return null;
+  return hit / tasks.length;
+}
+
+/* ---------- tape measure ---------- */
+
+function isMeasureDay(dateKey){
+  const n = daysBetween(PLAN.measureStart, dateKey);
+  return n >= 0 && n % PLAN.measureEvery === 0;
+}
+function nextMeasureDay(fromKey){
+  const n = daysBetween(PLAN.measureStart, fromKey);
+  if(n < 0) return PLAN.measureStart;
+  return addDays(PLAN.measureStart, Math.ceil(n / PLAN.measureEvery) * PLAN.measureEvery);
+}
+/** shoulder ÷ waist — the one number that holds both halves of the goal */
+function ratio(m){
+  return (m && m.shoulder > 0 && m.waist > 0) ? m.shoulder / m.waist : null;
+}
+function measureDates(){
+  return Object.keys(db.meas).filter(k => ratio(db.meas[k]) || db.meas[k].waist > 0).sort();
+}
+
+/* ============================================================
+   render
+   ============================================================ */
+
+function render(){
+  const ph = phaseFor(selected);
+  const today = iso(new Date());
+
+  document.getElementById("dateSel").value = selected;
+  document.getElementById("eyebrow").textContent =
+    fromIso(selected).toLocaleDateString("pt-BR",{weekday:"long",day:"numeric",month:"long"});
+  document.getElementById("phaseLine").innerHTML = `<b>${ph.name}</b> · ${ph.note}`;
+
+  // --- belt ---
+  const w = weightAt(today) ?? PLAN.startWeight;
+  const span = PLAN.startWeight - PLAN.goalWeight;
+  const pct = Math.max(0, Math.min(1, (PLAN.startWeight - w) / span));
+  document.getElementById("beltFill").style.width = (pct*100) + "%";
+  document.getElementById("ponteira").style.left = (pct*100) + "%";
+  document.getElementById("beltNow").textContent = w.toFixed(1) + " kg";
+  [103,97,93,90].forEach((mark,i) => {
+    document.querySelector(`.stripe[data-i="${i}"]`).classList.toggle("on", w <= mark);
+  });
+
+  // --- stats ---
+  const t = trend(today) ?? w;
+  const planned = plannedWeight(today);
+  const delta = t - planned;
+  document.getElementById("sWeight").innerHTML = `${w.toFixed(1)}<small> kg</small>`;
+  const dEl = document.getElementById("sDelta");
+  dEl.innerHTML = `${delta>0?"+":""}${delta.toFixed(1)}<small> kg</small>`;
+  dEl.className = "v " + (delta <= 0 ? "ahead" : "behind");
+  document.getElementById("sBf").innerHTML = `${estimatedBf(t).toFixed(1)}<small> %</small>`;
+
+  renderChecks(ph);
+  renderMeasures();
+  renderDots(today);
+  renderWeightChart();
+  renderAdherenceChart();
+  renderLifts(ph);
+}
+
+function renderChecks(ph){
+  const d = day(selected);
+  document.getElementById("wIn").value = typeof d.w === "number" ? d.w : "";
+  const a = adherence(selected);
+  document.getElementById("todayAdh").textContent = a === null ? "sem registro" : Math.round(a*100) + "%";
+
+  const box = document.getElementById("checks");
+  box.innerHTML = "";
+  ph.tasks.forEach(([key,title,sub]) => {
+    const b = document.createElement("button");
+    b.className = "check" + (d[key] ? " done" : "");
+    b.setAttribute("aria-pressed", d[key] ? "true" : "false");
+    b.innerHTML = `<span class="box">${d[key] ? "✓" : ""}</span>
+                   <span class="t">${title}${sub ? `<i>${sub}</i>` : ""}</span>`;
+    b.onclick = () => { d[key] = !d[key]; save(); render(); };
+    box.appendChild(b);
+  });
+}
+
+function renderMeasures(){
+  const box  = document.getElementById("measures");
+  const head = document.getElementById("measWhen");
+  const m = db.meas[selected] || (db.meas[selected] = {});
+
+  const today = iso(new Date());
+  if(isMeasureDay(selected)){
+    head.textContent = "dia de medição";
+    head.className = "sync";
+  }else{
+    const nx = nextMeasureDay(today);
+    head.textContent = `próxima em ${prettyDate(nx)}`;
+    head.className = "";
+  }
+
+  box.innerHTML = "";
+  PLAN.measures.forEach(([id,label,hint,opt]) => {
+    const row = document.createElement("div");
+    row.className = "mrow";
+    row.innerHTML = `<div class="mlab"><b>${label}${opt ? ' <s>opcional</s>' : ''}</b><i>${hint}</i></div>`;
+    const inp = document.createElement("input");
+    inp.type = "number"; inp.step = "0.1"; inp.inputMode = "decimal"; inp.min = "0";
+    inp.setAttribute("aria-label", label + " em centímetros");
+    inp.value = m[id] != null ? m[id] : "";
+    inp.placeholder = "cm";
+    inp.onchange = () => {
+      if(inp.value === "") delete m[id]; else m[id] = Number(inp.value);
+      save(); render();
+    };
+    row.appendChild(inp);
+    box.appendChild(row);
+  });
+
+  // headline numbers
+  const dates = measureDates();
+  const firstM = dates.length ? db.meas[dates[0]] : null;
+  const lastM  = dates.length ? db.meas[dates[dates.length-1]] : null;
+  const r = ratio(lastM);
+  document.getElementById("mWaist").innerHTML =
+    lastM && lastM.waist ? `${lastM.waist.toFixed(1)}<small> cm</small>` : "—";
+  document.getElementById("mRatio").innerHTML =
+    r ? r.toFixed(2) : "—";
+  const dEl = document.getElementById("mDelta");
+  if(firstM && lastM && firstM.waist && lastM.waist && dates.length > 1){
+    const d = lastM.waist - firstM.waist;
+    dEl.innerHTML = `${d > 0 ? "+" : ""}${d.toFixed(1)}<small> cm</small>`;
+    dEl.className = "v " + (d <= 0 ? "ahead" : "behind");
+  }else{ dEl.innerHTML = "—"; dEl.className = "v"; }
+
+  renderMeasureChart(dates);
+}
+
+function renderMeasureChart(dates){
+  const svg = document.getElementById("chartM");
+  const W=320,H=150, L=30,R=30,T=10,B=18;
+  if(dates.length < 2){
+    svg.innerHTML = `<text class="axis" x="${W/2}" y="${H/2}" text-anchor="middle" style="font-size:11px">
+      duas medições e a linha aparece</text>`;
+    return;
+  }
+  const first = dates[0], last = dates[dates.length-1];
+  const total = Math.max(1, daysBetween(first,last));
+  const X = k => L + (daysBetween(first,k)/total) * (W-L-R);
+
+  const waists = dates.map(k => db.meas[k].waist).filter(v => v > 0);
+  const wHi = Math.ceil(Math.max(...waists)/5)*5, wLo = Math.floor(Math.min(...waists)/5)*5 - 5;
+  const Yw = v => T + (wHi-v)/(wHi-wLo) * (H-T-B);
+
+  const rs = dates.map(k => ratio(db.meas[k])).filter(Boolean);
+  const rHi = rs.length ? Math.max(...rs)+.08 : 1.5, rLo = rs.length ? Math.min(...rs)-.08 : 1.2;
+  const Yr = v => T + (rHi-v)/(rHi-rLo) * (H-T-B);
+
+  let out = "";
+  for(let i=0;i<=3;i++){
+    const y = T + i*(H-T-B)/3;
+    const wv = wHi - i*(wHi-wLo)/3, rv = rHi - i*(rHi-rLo)/3;
+    out += `<line class="gridline" x1="${L}" y1="${y}" x2="${W-R}" y2="${y}"/>
+            <text class="axis" x="0" y="${y+3}">${wv.toFixed(0)}</text>
+            <text class="axis" x="${W-R+4}" y="${y+3}" fill="#E0B93A">${rv.toFixed(2)}</text>`;
+  }
+  const wPts = dates.filter(k=>db.meas[k].waist>0).map(k=>`${X(k)},${Yw(db.meas[k].waist)}`);
+  out += `<polyline class="trend" points="${wPts.join(" ")}"/>`;
+  dates.filter(k=>db.meas[k].waist>0).forEach(k =>
+    out += `<circle cx="${X(k)}" cy="${Yw(db.meas[k].waist)}" r="3" fill="#5FB8E8"/>`);
+
+  const rPts = dates.filter(k=>ratio(db.meas[k])).map(k=>`${X(k)},${Yr(ratio(db.meas[k]))}`);
+  if(rPts.length > 1) out += `<polyline points="${rPts.join(" ")}" fill="none" stroke="#E0B93A" stroke-width="2" stroke-linejoin="round"/>`;
+
+  out += `<text class="axis" x="${L}" y="${H-4}">${prettyDate(first)}</text>
+          <text class="axis" x="${W-R}" y="${H-4}" text-anchor="end">${prettyDate(last)}</text>`;
+  svg.innerHTML = out;
+}
+
+function renderDots(today){
+  const box = document.getElementById("dots");
+  box.innerHTML = "";
+  let streak = 0, counting = true;
+  for(let i=27;i>=0;i--){
+    const k = addDays(today,-i);
+    const a = adherence(k);
+    const el = document.createElement("div");
+    let cls = "p0";
+    if(a !== null){ cls = a >= 1 ? "p3" : a >= .6 ? "p2" : "p1"; }
+    el.className = "dot " + cls + (k === today ? " today" : "");
+    el.title = `${prettyDate(k)} — ${a===null ? "sem registro" : Math.round(a*100)+"%"}`;
+    box.appendChild(el);
+  }
+  for(let i=0;i<60;i++){
+    const a = adherence(addDays(today,-i));
+    if(i === 0 && a === null) continue;      // today not logged yet — don't break the streak
+    if(a !== null && a >= .6) streak++; else break;
+  }
+  document.getElementById("streak").textContent = streak > 0 ? `${streak} dias seguidos` : "—";
+}
+
+function renderWeightChart(){
+  const svg = document.getElementById("chartW");
+  const W=320,H=170, L=30,R=6,T=10,B=18;
+  const first = PLAN.curve[0][0];
+  const today = iso(new Date());
+  const last  = addDays(today, 14) > PLAN.curve[4][0] ? PLAN.curve[4][0] : addDays(today,14);
+  const total = Math.max(1, daysBetween(first,last));
+  const yMax = 111, yMin = 88;
+  const X = k => L + (daysBetween(first,k)/total) * (W-L-R);
+  const Y = v => T + (yMax-v)/(yMax-yMin) * (H-T-B);
+
+  let s = "";
+  for(let v=110;v>=90;v-=5){
+    s += `<line class="gridline" x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}"/>
+          <text class="axis" x="0" y="${Y(v)+3}">${v}</text>`;
+  }
+  // planned curve
+  s += `<polyline class="plan" points="${PLAN.curve.filter(p=>p[0]<=last).map(p=>`${X(p[0])},${Y(p[1])}`).join(" ")}"/>`;
+
+  // logged weights + 7d trend
+  const keys = Object.keys(db.days).filter(k => typeof db.days[k].w === "number" && k <= last).sort();
+  if(keys.length){
+    s += `<polyline class="real" points="${keys.map(k=>`${X(k)},${Y(db.days[k].w)}`).join(" ")}"/>`;
+    const tp = keys.map(k => { const t = trend(k); return t ? `${X(k)},${Y(t)}` : null; }).filter(Boolean);
+    if(tp.length > 1) s += `<polyline class="trend" points="${tp.join(" ")}"/>`;
+    const lastK = keys[keys.length-1];
+    s += `<circle cx="${X(lastK)}" cy="${Y(trend(lastK)||db.days[lastK].w)}" r="3.5" fill="#5FB8E8"/>`;
+  }else{
+    s += `<text class="axis" x="${W/2}" y="${H/2}" text-anchor="middle" style="font-size:11px">
+            registre o primeiro peso para ver a linha</text>`;
+  }
+  s += `<text class="axis" x="${L}" y="${H-4}">${prettyDate(first)}</text>
+        <text class="axis" x="${W-R}" y="${H-4}" text-anchor="end">${prettyDate(last)}</text>`;
+  svg.innerHTML = s;
+}
+
+function renderAdherenceChart(){
+  const svg = document.getElementById("chartA");
+  const W=320,H=120, L=26,R=6,T=8,B=20, weeks=10;
+  const today = iso(new Date());
+  const dow = fromIso(today).getDay();
+  const thisMon = addDays(today, dow === 0 ? -6 : 1-dow);
+
+  const bars = [];
+  for(let i=weeks-1;i>=0;i--){
+    const mon = addDays(thisMon, -7*i);
+    let sum=0, n=0;
+    for(let d=0;d<7;d++){
+      const a = adherence(addDays(mon,d));
+      if(a !== null){ sum += a; n++; }
+    }
+    bars.push({ mon, v: n ? sum/n : 0, n });
+  }
+  const bw = (W-L-R)/weeks;
+  let s = "";
+  [0,.5,1].forEach(v => {
+    const y = T + (1-v)*(H-T-B);
+    s += `<line class="gridline" x1="${L}" y1="${y}" x2="${W-R}" y2="${y}"/>
+          <text class="axis" x="0" y="${y+3}">${v*100}%</text>`;
+  });
+  bars.forEach((b,i) => {
+    const h = b.v * (H-T-B);
+    const x = L + i*bw + bw*.18;
+    const col = b.v >= .85 ? "#E0B93A" : b.v >= .6 ? "#B08D24" : b.n ? "#7A5F18" : "#1E4265";
+    s += `<rect x="${x}" y="${T+(H-T-B)-h}" width="${bw*.64}" height="${Math.max(h,1.5)}" rx="2" fill="${col}"/>`;
+    if(i === weeks-1 || i % 3 === 0)
+      s += `<text class="axis" x="${x+bw*.32}" y="${H-6}" text-anchor="middle">${prettyDate(b.mon)}</text>`;
+  });
+  svg.innerHTML = s;
+}
+
+function nextRoutine(dateKey){
+  const past = Object.keys(db.lifts).filter(k => k < dateKey && db.lifts[k].r).sort();
+  if(!past.length) return "A";
+  const last = db.lifts[past[past.length-1]].r;
+  return { A:"B", B:"C", C:"A" }[last] || "A";
+}
+
+function renderLifts(ph){
+  const box  = document.getElementById("lifts");
+  const head = document.getElementById("liftDay");
+  box.innerHTML = ""; head.innerHTML = "";
+
+  if(!ph.routine){
+    box.innerHTML = `<p class="hint" style="margin:0">Sem treino previsto nesta fase.</p>`;
+    return;
+  }
+
+  const rec = db.lifts[selected] || (db.lifts[selected] = {});
+  let key;
+  if(ph.routine === "fixed"){
+    key = "CAL";
+    head.textContent = "reps por série";
+  }else{
+    key = rec.r || nextRoutine(selected);
+    ["A","B","C"].forEach(k => {
+      const b = document.createElement("button");
+      b.className = "pick" + (k === key ? " on" : "");
+      b.textContent = k;
+      b.setAttribute("aria-pressed", k === key ? "true" : "false");
+      b.onclick = () => { rec.r = k; save(); render(); };
+      head.appendChild(b);
+    });
+  }
+  rec.r = key;
+
+  const routine = PLAN.routines[key];
+  const title = document.createElement("div");
+  title.className = "rname";
+  title.textContent = routine.label;
+  box.appendChild(title);
+
+  // previous session of this same routine, for the target placeholders
+  const past = Object.keys(db.lifts).filter(k => k < selected && db.lifts[k].r === key).sort();
+  const prev = past.length ? (db.lifts[past[past.length-1]].s || {}) : {};
+
+  routine.ex.forEach(([id,name,sets,reps,bw]) => {
+    const block = document.createElement("div");
+    block.className = "exblock";
+    block.innerHTML = `<div class="exhead"><b>${name}</b><i>${sets}×${reps}</i></div>`;
+    const grid = document.createElement("div");
+    grid.className = "setgrid" + (bw ? " bw" : "");
+    if(!bw) grid.innerHTML = `<span></span><span class="colh">kg</span><span class="colh">reps</span>`;
+    else    grid.innerHTML = `<span></span><span class="colh">reps</span>`;
+
+    const store = rec.s || (rec.s = {});
+    const arr = store[id] || (store[id] = []);
+    const old = prev[id] || [];
+
+    for(let i=0;i<sets;i++){
+      if(!arr[i]) arr[i] = [null,null];
+      grid.insertAdjacentHTML("beforeend", `<span class="setn">${i+1}</span>`);
+      const fields = bw ? [1] : [0,1];
+      fields.forEach(f => {
+        const inp = document.createElement("input");
+        inp.type = "number"; inp.inputMode = "decimal"; inp.min = "0";
+        if(f === 0) inp.step = "0.5";
+        inp.setAttribute("aria-label", `${name}, série ${i+1}, ${f===0?"carga":"repetições"}`);
+        inp.value = arr[i][f] != null ? arr[i][f] : "";
+        const p = old[i] && old[i][f] != null ? old[i][f] : null;
+        inp.placeholder = p != null ? p : "–";
+        inp.onchange = () => {
+          arr[i][f] = inp.value === "" ? null : Number(inp.value);
+          save();
+        };
+        grid.appendChild(inp);
+      });
+    }
+    block.appendChild(grid);
+    box.appendChild(block);
+  });
+}
+
+/* ============================================================
+   wiring
+   ============================================================ */
+
+function toast(msg){
+  const el = document.getElementById("toast");
+  el.textContent = msg; el.classList.add("show");
+  clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove("show"), 2200);
+}
+
+document.getElementById("dateSel").onchange = e => { selected = e.target.value; render(); };
+document.getElementById("btnToday").onclick = () => { selected = iso(new Date()); render(); };
+document.getElementById("wIn").onchange = e => {
+  const v = parseFloat(e.target.value);
+  const d = day(selected);
+  if(isNaN(v)) delete d.w; else d.w = v;
+  save(); render();
+};
+
+document.getElementById("btnExport").onclick = () => {
+  const blob = new Blob([JSON.stringify(db,null,2)], {type:"application/json"});
+  const a = document.createElement("a");
+  a.href = URL.createObjectURL(blob);
+  a.download = `cut-${iso(new Date())}.json`;
+  a.click(); URL.revokeObjectURL(a.href);
+  toast("Backup exportado");
+};
+document.getElementById("btnImport").onclick = () => document.getElementById("fileIn").click();
+document.getElementById("fileIn").onchange = e => {
+  const f = e.target.files[0]; if(!f) return;
+  const r = new FileReader();
+  r.onload = () => {
+    try{
+      const inc = JSON.parse(r.result);
+      db.days  = Object.assign(db.days  || {}, inc.days  || {});
+      db.lifts = Object.assign(db.lifts || {}, inc.lifts || {});
+      db.meas  = Object.assign(db.meas  || {}, inc.meas  || {});
+      save(); render(); toast("Dados importados");
+    }catch(err){ toast("Arquivo inválido"); }
+  };
+  r.readAsText(f);
+  e.target.value = "";
+};
+document.getElementById("btnReset").onclick = () => {
+  if(confirm("Apagar todo o histórico? Exporte antes se quiser guardar.")){
+    db = blank(); save(); render(); toast("Histórico apagado");
+  }
+};
+
+boot();
+</script>
+</body>
+</html>
