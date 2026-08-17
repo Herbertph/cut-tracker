@@ -217,7 +217,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
       <span class="stripe" data-i="2"></span><span class="stripe" data-i="3"></span>
     </div>
   </div>
-  <div class="belt-scale"><span>110 kg</span><span id="beltNow">—</span><span>90 kg</span></div>
+  <div class="belt-scale"><span>106 kg</span><span id="beltNow">—</span><span>87 kg</span></div>
 </div>
 
 <div class="stats">
@@ -251,7 +251,7 @@ svg{display:block;width:100%;height:auto;overflow:visible}
     </div>
     <div id="measures"></div>
     <svg id="chartM" viewBox="0 0 320 150" preserveAspectRatio="none" aria-label="Cintura e razão ombro sobre cintura" style="margin-top:14px"></svg>
-    <p class="hint"><b style="color:#5FB8E8">Azul</b> é a cintura em cm, escala à esquerda. <b style="color:var(--gold)">Dourado</b> é ombro ÷ cintura, escala à direita — hoje perto de 1,25, o alvo é 1,45–1,50.<br>
+    <p class="hint"><b style="color:#5FB8E8">Azul</b> é a cintura em cm, escala à esquerda. <b style="color:var(--gold)">Dourado</b> é ombro ÷ cintura, escala à direita — alvo ~1,50. Cintura alvo: 89–92 cm.<br>
     Sempre de manhã, em jejum, depois do banheiro. Expire normal, não sugue a barriga. Meça três vezes e anote a do meio.</p>
   </div>
 </section>
@@ -310,18 +310,19 @@ svg{display:block;width:100%;height:auto;overflow:visible}
    ============================================================ */
 
 const PLAN = {
-  startWeight: 110,
-  goalWeight: 90,
-  startBf: 0.30,
+  startWeight: 106,
+  goalWeight: 87,
+  startBf: 0.305,
   fatShare: 0.95,           // assumed share of loss coming from fat
   // piecewise weight targets — matches the phased milestones
   curve: [
-    ["2026-08-17", 110],
-    ["2026-10-31", 103],
-    ["2026-12-31",  97],
-    ["2027-02-28",  93],
-    ["2027-04-30",  90]
+    ["2026-08-17", 106],
+    ["2026-10-31",  99],
+    ["2026-12-31",  94],
+    ["2027-02-28",  90],
+    ["2027-04-30",  87]
   ],
+  milestones: [99, 94, 90, 87],   // belt degrees
   phases: [
     { id:"p0",  from:"2026-08-17", to:"2026-09-07", routine:"fixed",
       name:"Fase 0 · Calistenia", note:"3x/semana · dieta 2.250 kcal",
@@ -567,7 +568,7 @@ function render(){
   document.getElementById("beltFill").style.width = (pct*100) + "%";
   document.getElementById("ponteira").style.left = (pct*100) + "%";
   document.getElementById("beltNow").textContent = w.toFixed(1) + " kg";
-  [103,97,93,90].forEach((mark,i) => {
+  PLAN.milestones.forEach((mark,i) => {
     document.querySelector(`.stripe[data-i="${i}"]`).classList.toggle("on", w <= mark);
   });
 
@@ -730,12 +731,12 @@ function renderWeightChart(){
   const today = iso(new Date());
   const last  = addDays(today, 14) > PLAN.curve[4][0] ? PLAN.curve[4][0] : addDays(today,14);
   const total = Math.max(1, daysBetween(first,last));
-  const yMax = 111, yMin = 88;
+  const yMax = 107, yMin = 85;
   const X = k => L + (daysBetween(first,k)/total) * (W-L-R);
   const Y = v => T + (yMax-v)/(yMax-yMin) * (H-T-B);
 
   let s = "";
-  for(let v=110;v>=90;v-=5){
+  for(let v=105;v>=85;v-=5){
     s += `<line class="gridline" x1="${L}" y1="${Y(v)}" x2="${W-R}" y2="${Y(v)}"/>
           <text class="axis" x="0" y="${Y(v)+3}">${v}</text>`;
   }
